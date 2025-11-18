@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Magic Letter</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    html, body {
+        width: 100%;
+        height: 100%;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: serif;
+        min-height: 100vh;
+        position: relative;
+        background-color: #000;
+        overflow: hidden;
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: url("background1.png") no-repeat center center/cover;
+        z-index: -1;
+        transition: transform 0.4s ease, width 0.4s ease, height 0.4s ease;
+        transform-origin: center center;
+        pointer-events: none;
+    }
+
+    /* Letter button will be always in the bottom right corner of background, regardless of orientation */
+    .letter-wrapper {
+        position: fixed;
+        z-index: 2;
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-end;
+        touch-action: manipulation;
+        min-width: 60px;
+        min-height: 48px;
+        cursor: pointer;
+        /* Reset all sides and use CSS variables to control placement exactly */
+        top: auto;
+        left: auto;
+        right: var(--letter-pos-right, 3vw);
+        bottom: var(--letter-pos-bottom, 3vw);
+        transition: right 0.44s cubic-bezier(.6,.3,.3,1), bottom 0.44s cubic-bezier(.6,.3,.3,1), left 0.44s, top 0.44s;
+    }
+
+    .letter-wrapper:hover .letter-img {
+        transform: scale(1.1);
+        filter: brightness(1.1);
+    }
+
+    .letter-img {
+        width: 19vw;
+        max-width: 195px;
+        min-width: 70px;
+        height: auto;
+        pointer-events: none;
+        user-select: none;
+        display: block;
+        transition: transform 0.25s ease, filter 0.3s ease;
+        aspect-ratio: 1000/604;
+        box-shadow: 0 6px 24px 0 rgba(0,0,0,0.28), 0 1.5px 8px 0 rgba(70,12,28,0.30);
+    }
+
+    body.rotate-landscape .letter-img {
+        width: 22vh;
+        max-width: 200px;
+        min-width: 60px;
+        transform: rotate(90deg);
+        transform-origin: center center;
+        height: auto;
+        aspect-ratio: 1000/604;
+    }
+    body.rotate-landscape .letter-wrapper:hover .letter-img {
+        transform: rotate(90deg) scale(1.1);
+    }
+
+    body.rotate-landscape::before {
+        width: 100vh;
+        height: 100vw;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(90deg);
+    }
+
+    @media (max-width: 480px) {
+        .letter-img {
+            min-width: 56px;
+            max-width: 90px;
+            width: 22vw;
+        }
+        body.rotate-landscape .letter-img {
+            min-width: 44px;
+            max-width: 100px;
+            width: 18vh;
+        }
+    }
+</style>
+
+</head>
+<body>
+
+<div class="letter-wrapper" onclick="openLetter()">
+    <img src="letter.png" class="letter-img" alt="Magic Letter">
+</div>
+
+<script>
+    function openLetter() {
+        window.location.href = "https://hungmh0205.github.io/21-11/index_final_inline.html";
+    }
+
+    function updateLetterPosition() {
+        // Nút sẽ luôn ở góc dưới phải của background (dù xoay màn hình)
+        // Tính toán so với background sau transform
+        const wrapper = document.querySelector('.letter-wrapper');
+        const bg = document.body;
+
+        // Lấy kích thước viewport
+        let w = window.innerWidth, h = window.innerHeight;
+
+        // Kiểm tra background đã xoay chưa
+        const isLandscape = bg.classList.contains("rotate-landscape");
+
+        if (isLandscape) {
+            // Background xoay 90deg và nằm ở giữa trang.
+            // Nút phải nằm ở góc phải-dưới của vùng nền đã xoay.
+            const vw = Math.max(window.innerWidth, window.innerHeight);
+            const vh = Math.min(window.innerWidth, window.innerHeight);
+
+            // Kích thước background sau transform là vh x vw (đã rotate 90deg)
+            // Tính ra lề phải/và lề dưới trong viewport (hay nói cách khác là phía dưới-phải của ảnh nền ảo)
+            // Ảnh nền được căn giữa màn hình.
+            // Do đó, margin phải: (viewport rộng - chiều dài nền) / 2 + margin ảo (tốt nhất = 3vw/3vh)
+            // margin ảo lấy tỉ lệ theo ngắn nhất (thường là chiều cao trước khi rotate)
+            const paddingX = vh * 0.03; // dùng vh cho trọng tâm ngắn hơn
+            const paddingY = vw * 0.03; // dùng vw sau khi đã rotate
+
+            // Sau khi xoay, background căn giữa; tính phần bị dư ra so với viewport 
+            const offsetX = (w - vh) / 2;
+            const offsetY = (h - vw) / 2;
+
+            wrapper.style.right = (offsetX + paddingX) + "px";
+            wrapper.style.left = "auto";
+            wrapper.style.bottom = (offsetY + paddingY) + "px";
+            wrapper.style.top = "auto";
+        } else {
+            // Portrait - nền full viewport
+            // Dùng 3vw/bottom 3vw như cũ
+            wrapper.style.right = (w * 0.03) + "px";
+            wrapper.style.left = "auto";
+            wrapper.style.bottom = (h * 0.03) + "px";
+            wrapper.style.top = "auto";
+        }
+    }
+
+    function enforceLandscape() {
+        const isSmallScreen = Math.max(window.innerWidth, window.innerHeight) <= 900;
+        const shouldRotate = isSmallScreen && window.innerHeight > window.innerWidth;
+        document.body.classList.toggle("rotate-landscape", shouldRotate);
+        updateLetterPosition();
+    }
+
+    window.addEventListener("load", enforceLandscape);
+    window.addEventListener("resize", enforceLandscape);
+    window.addEventListener("orientationchange", enforceLandscape);
+</script>
+
+</body>
+</html>
